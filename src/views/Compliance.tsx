@@ -4,7 +4,7 @@ import { PlusI } from "../components/icons";
 
 export default function ComplianceView() {
   const {
-    tabs, compliance, complianceDocUrl, markObligationFiled,
+    tabs, compliance, openComplianceDoc, markObligationFiled,
     openPolicyForm, openDocForm, openRiskForm, openContractForm, me, perms,
   } = useApp();
   const tab = tabs.compliance;
@@ -47,7 +47,7 @@ export default function ComplianceView() {
                 {policies.length === 0 && <tr><td colSpan={5} className="meta">No policies yet.</td></tr>}
                 {policies.map((p) => (
                   <tr key={p.code}>
-                    <td>{p.doc ? <a href={complianceDocUrl(p.doc)} target="_blank" rel="noreferrer" style={{ color: "var(--flame)", textDecoration: "none" }}>{p.title}</a> : p.title}</td>
+                    <td>{p.doc ? <a href="#" onClick={(e) => { e.preventDefault(); openComplianceDoc(p.doc!); }} style={{ color: "var(--flame)", textDecoration: "none" }}>{p.title}</a> : p.title}</td>
                     <td className="mono">{p.code}</td>
                     <td className="mono">{p.version}</td>
                     <td className="mono">{p.effectiveFrom ?? "—"}</td>
@@ -70,7 +70,7 @@ export default function ComplianceView() {
                 {companyDocuments.length === 0 && <tr><td colSpan={4} className="meta">No documents yet.</td></tr>}
                 {companyDocuments.map((d) => (
                   <tr key={d.name}>
-                    <td>{d.doc ? <a href={complianceDocUrl(d.doc)} target="_blank" rel="noreferrer" style={{ color: "var(--flame)", textDecoration: "none" }}>{d.name}</a> : d.name}</td>
+                    <td>{d.doc ? <a href="#" onClick={(e) => { e.preventDefault(); openComplianceDoc(d.doc!); }} style={{ color: "var(--flame)", textDecoration: "none" }}>{d.name}</a> : d.name}</td>
                     <td className="meta" style={{ textTransform: "capitalize" }}>{d.kind ?? "—"}</td>
                     <td className="mono">{d.expiry}</td>
                     <td><span className={`pill ${d.statusCls}`}>{d.statusTxt}</span></td>
@@ -133,7 +133,7 @@ export default function ComplianceView() {
                   <tr key={c.counterparty + c.title}>
                     <td>{c.counterparty}</td>
                     <td className="meta" style={{ textTransform: "capitalize" }}>{c.kind}</td>
-                    <td>{c.doc ? <a href={complianceDocUrl(c.doc)} target="_blank" rel="noreferrer" style={{ color: "var(--flame)", textDecoration: "none" }}>{c.title}</a> : c.title}{c.detail ? <><br /><span className="meta" style={{ textTransform: "none", letterSpacing: 0 }}>{c.detail}</span></> : null}</td>
+                    <td>{c.doc ? <a href="#" onClick={(e) => { e.preventDefault(); openComplianceDoc(c.doc!); }} style={{ color: "var(--flame)", textDecoration: "none" }}>{c.title}</a> : c.title}{c.detail ? <><br /><span className="meta" style={{ textTransform: "none", letterSpacing: 0 }}>{c.detail}</span></> : null}</td>
                     <td className="mono">{c.expiry}</td>
                     <td><span className={`pill ${c.statusCls}`}>{c.statusTxt}</span></td>
                   </tr>

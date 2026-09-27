@@ -938,7 +938,7 @@ function RecurringBillModal() {
 
 /* ============================ view ============================ */
 export default function HrView() {
-  const { tabs, toast, goTab, openHrModal, publishPosting, hrLeaveQueue, hrBalances, decideLeave, hrData, preparePayroll, approvePayroll, postPayroll, setFieldAssignmentState, startAppraisalCycle, verifyCertification, setFeedbackState, refreshHr, staffDocUrl, weeklyReports, acknowledgeWeeklyReport, canViewReports, uploadedFileUrl, level, members, perms,
+  const { tabs, toast, goTab, openHrModal, publishPosting, hrLeaveQueue, hrBalances, decideLeave, hrData, preparePayroll, approvePayroll, postPayroll, setFieldAssignmentState, startAppraisalCycle, verifyCertification, setFeedbackState, refreshHr, staffDocUrl, weeklyReports, acknowledgeWeeklyReport, canViewReports, openUploadedFile, level, members, perms,
     recurringBills, canManageBills, openBill, openBillEdit, deleteBill, requestBillPayment } = useApp();
   const tab = tabs.hr;
   // HR access: View (1) is read-only; Edit (2) can add/edit staff, upload docs,
@@ -1630,7 +1630,7 @@ export default function HrView() {
                           <>
                             <td style={{ maxWidth: 300, fontSize: 12.5, color: "var(--ink-soft)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.did}</td>
                             <td style={{ fontSize: 12.5, color: r.blockers ? "var(--ember)" : "var(--ink-soft)" }}>{r.blockers ? "⚑ yes" : "—"}</td>
-                            <td>{r.attachmentPath ? <a href="#" onClick={(e) => { e.preventDefault(); window.open(uploadedFileUrl(r.attachmentPath!), "_blank", "noopener"); }} style={{ color: "var(--flame)", textDecoration: "none", fontSize: 12.5 }}>View</a> : <span style={{ color: "var(--ink-soft)" }}>—</span>}</td>
+                            <td>{r.attachmentPath ? <a href="#" onClick={(e) => { e.preventDefault(); openUploadedFile(r.attachmentPath!); }} style={{ color: "var(--flame)", textDecoration: "none", fontSize: 12.5 }}>View</a> : <span style={{ color: "var(--ink-soft)" }}>—</span>}</td>
                             <td><span className={`pill ${r.state === "acknowledged" ? "done" : "today"}`} style={{ textTransform: "none" }} title={r.reviewedBy ? `by ${r.reviewedBy}` : ""}>{r.state === "acknowledged" ? "Acknowledged" : "New"}</span></td>
                             <td>
                               <span style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
@@ -1672,7 +1672,7 @@ export default function HrView() {
                       <td className="mono">{fmtD(r.weekStart)}</td>
                       <td style={{ maxWidth: 300, fontSize: 12.5, color: "var(--ink-soft)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.did}</td>
                       <td style={{ fontSize: 12.5, color: r.blockers ? "var(--ember)" : "var(--ink-soft)" }}>{r.blockers ? "⚑ yes" : "—"}</td>
-                      <td>{r.attachmentPath ? <a href="#" onClick={(e) => { e.preventDefault(); window.open(uploadedFileUrl(r.attachmentPath!), "_blank", "noopener"); }} style={{ color: "var(--flame)", textDecoration: "none", fontSize: 12.5 }}>View</a> : <span style={{ color: "var(--ink-soft)" }}>—</span>}</td>
+                      <td>{r.attachmentPath ? <a href="#" onClick={(e) => { e.preventDefault(); openUploadedFile(r.attachmentPath!); }} style={{ color: "var(--flame)", textDecoration: "none", fontSize: 12.5 }}>View</a> : <span style={{ color: "var(--ink-soft)" }}>—</span>}</td>
                       <td><span className={`pill ${r.state === "acknowledged" ? "done" : "today"}`} style={{ textTransform: "none" }} title={r.reviewedBy ? `by ${r.reviewedBy}` : ""}>{r.state === "acknowledged" ? "Acknowledged" : "New"}</span></td>
                       <td>
                         <span style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
@@ -2018,7 +2018,7 @@ export default function HrView() {
                   <div><label>Next week's plan</label><div style={{ fontSize: 13.5, whiteSpace: "pre-wrap", padding: "4px 0", color: reportView.nextWeek ? undefined : "var(--ink-soft)" }}>{reportView.nextWeek || "—"}</div></div>
                 </>
               )}
-              <div><label>Attachment</label><div style={{ fontSize: 13.5, padding: "4px 0" }}>{reportView.attachmentPath ? <a href="#" onClick={(e) => { e.preventDefault(); window.open(uploadedFileUrl(reportView.attachmentPath!), "_blank", "noopener"); }} style={{ color: "var(--flame)", textDecoration: "none" }}>View attached file</a> : <span style={{ color: "var(--ink-soft)" }}>None</span>}</div></div>
+              <div><label>Attachment</label><div style={{ fontSize: 13.5, padding: "4px 0" }}>{reportView.attachmentPath ? <a href="#" onClick={(e) => { e.preventDefault(); openUploadedFile(reportView.attachmentPath!); }} style={{ color: "var(--flame)", textDecoration: "none" }}>View attached file</a> : <span style={{ color: "var(--ink-soft)" }}>None</span>}</div></div>
             </div>
             <div className="mf">
               <button className="btn" onClick={() => setReportView(null)}>Close</button>

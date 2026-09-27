@@ -15,13 +15,12 @@ export function ReceiptList({ paths, onAdd, onRemove, busy, addLabel = "Add rece
   addLabel?: string;
   readOnly?: boolean;
 }) {
-  const { uploadedFileUrl } = useApp();
-  const open = (p: string) => window.open(uploadedFileUrl(p), "_blank", "noopener");
+  const { openUploadedFile } = useApp();
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
       {paths.map((p, i) => (
         <span key={p} className="pill" style={{ textTransform: "none", display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11 }}>
-          <a href="#" onClick={(e) => { e.preventDefault(); open(p); }} style={{ color: "var(--flame)", textDecoration: "none" }}
+          <a href="#" onClick={(e) => { e.preventDefault(); openUploadedFile(p); }} style={{ color: "var(--flame)", textDecoration: "none" }}
             title={p.split("/").pop()?.replace(/^\d+-/, "")}>
             {paths.length > 1 ? `Receipt ${i + 1}` : "Receipt"}
           </a>

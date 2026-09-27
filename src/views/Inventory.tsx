@@ -414,7 +414,7 @@ async function exportMovements(toast: (t: string, s?: string) => void) {
 // One dispatch row. Delivered dispatches can carry a proof-of-delivery receipt:
 // click "Add receipt" → pick a file → it uploads to Storage and saves against the dispatch.
 function DispatchItem({ d }: { d: DispatchRow }) {
-  const { setDispatchState, attachDispatchReceipt, receiptUrl, level } = useApp();
+  const { setDispatchState, attachDispatchReceipt, openDispatchReceipt, level } = useApp();
   const canEdit = level("inventory") >= 2;
   const fileRef = useRef<HTMLInputElement>(null);
   return (
@@ -430,7 +430,7 @@ function DispatchItem({ d }: { d: DispatchRow }) {
           <input ref={fileRef} type="file" accept="image/*,application/pdf" style={{ display: "none" }}
             onChange={(e) => { const f = e.target.files?.[0]; if (f) attachDispatchReceipt(d.id, f); e.target.value = ""; }} />
           {d.receipt ? (
-            <a href={receiptUrl(d.receipt)} target="_blank" rel="noopener noreferrer" className="btn"
+            <a href="#" onClick={(e) => { e.preventDefault(); openDispatchReceipt(d.receipt!); }} className="btn"
               style={{ marginRight: 8, display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none", color: "var(--green)" }} title="View delivery receipt">
               <CheckI width={13} height={13} /> Receipt
             </a>

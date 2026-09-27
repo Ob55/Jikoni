@@ -6,6 +6,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "./lib/supabase";
+import { openSignedUrl } from "./lib/signedUrl";
 import { LoginGate, SetPassword } from "./components/login";
 import {
   Entity, WeekTask, initialMyWeek, initialPerms, Perms, roleTemplates, budgetLines,
@@ -427,7 +428,7 @@ interface AppApi {
   listProjectMembers: (projectId: string) => Promise<ProjectMember[]>;
   setProjectMemberRole: (projectId: string, email: string, role: string) => Promise<ProjectMember[] | null>;
   addProjectDocument: (projectId: string, file: File) => void;
-  projectDocUrl: (path: string, downloadName?: string) => string;
+  openProjectDoc: (path: string, downloadName?: string) => Promise<void>;
 
   hrMe: HrSummary | null;
   leaveOpen: boolean;
@@ -443,7 +444,7 @@ interface AppApi {
   staffDocUrl: (path: string) => Promise<string | null>;
   uploadFile: (prefix: string, file: File) => Promise<string | null>;
   uploadFiles: (prefix: string, files: File[]) => Promise<string[]>;
-  uploadedFileUrl: (path: string) => string;
+  openUploadedFile: (path: string) => Promise<void>;
   // Petty-cash requests (Staff Portal ↔ Finance Petty Cash)
   pettyRequests: PettyRequest[];
   pettyOpen: boolean;
@@ -576,7 +577,7 @@ interface AppApi {
   closeEngUpdate: () => void;
   logEngagementNote: (ref: string, v: { channel: string; who: string; note: string; stageTo: string; file?: File | null }) => void;
   setEngagementPartners: (ref: string, partnerIds: string[]) => void;
-  engDocUrl: (path: string, downloadName?: string) => string;
+  openEngDoc: (path: string, downloadName?: string) => Promise<void>;
   partnerOpen: boolean;
   openPartnerForm: () => void;
   closePartnerForm: () => void;
@@ -609,7 +610,7 @@ interface AppApi {
   openContractForm: () => void;
   closeContractForm: () => void;
   addContract: (v: { counterparty: string; kind: string; title: string; detail: string; expiresOn: string; file?: File | null }) => void;
-  complianceDocUrl: (path: string, downloadName?: string) => string;
+  openComplianceDoc: (path: string, downloadName?: string) => Promise<void>;
 
   inventory: InventoryData | null;
   stockModal: StockModalMode;
@@ -622,7 +623,7 @@ interface AppApi {
   createDispatch: (project: string, destination: string, sku: string, qty: number) => void;
   setDispatchState: (ref: string, state: "delivered" | "cancelled") => void;
   attachDispatchReceipt: (ref: string, file: File) => void;
-  receiptUrl: (path: string) => string;
+  openDispatchReceipt: (path: string) => Promise<void>;
   itemModal: ItemModalMode;
   openItemModal: (m: Exclude<ItemModalMode, null>) => void;
   closeItemModal: () => void;
@@ -1522,9 +1523,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const paths = await Promise.all(files.map((f) => uploadFile(prefix, f)));
     return paths.filter((p): p is string => !!p);
   }
-  // Public URL for a file in the shared 'uploads' bucket (petty-cash invoices, weekly-report attachments).
-  function uploadedFileUrl(path: string): string {
-    return supabase.storage.from("uploads").getPublicUrl(path).data.publicUrl;
+  // Open a file from the private 'uploads' bucket (petty-cash invoices, receipts, weekly-report attachments).
+  async function openUploadedFile(path: string) {
+    if (!(await openSignedUrl("uploads", path))) toast("Couldn't open file", "You may not have access to this file");
   }
 
   /* ---------- vendors (onboard → screen → award-ready) ---------- */
@@ -1870,9 +1871,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setProjectDetails((prev) => ({ ...prev, [data.name as string]: data.detail as ProjectDetail }));
     toast("Document added", `${file.name} — attached to the project`);
   }
-  // Public URL for a stored project document; pass a name to force a download.
-  function projectDocUrl(path: string, downloadName?: string) {
-    return supabase.storage.from("project-docs").getPublicUrl(path, downloadName ? { download: downloadName } : undefined).data.publicUrl;
+  // Open a stored project document; pass a name to download it instead.
+  async function openProjectDoc(path: string, downloadName?: string) {
+    if (!(await openSignedUrl("project-docs", path, downloadName))) toast("Couldn't open document", "You may not have access to this file");
   }
 
   /* ---------- invite (Phase 5): record the invite + least-privilege template + audit,
@@ -2599,9 +2600,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (error) { toast("Couldn't save document", error.message); return false; }
     return true;
   }
-  // Public URL for a stored engagement document; pass a name to force a download.
-  function engDocUrl(path: string, downloadName?: string) {
-    return supabase.storage.from("engagement-docs").getPublicUrl(path, downloadName ? { download: downloadName } : undefined).data.publicUrl;
+  // Open a stored engagement document; pass a name to download it instead.
+  async function openEngDoc(path: string, downloadName?: string) {
+    if (!(await openSignedUrl("engagement-docs", path, downloadName))) toast("Couldn't open document", "You may not have access to this file");
   }
   async function createEngagement(name: string, owner: string, pipeline: "up" | "down", dueKey: string, note: string, taggedEmail: string, file?: File | null) {
     // stage isn't collected on the form — the RPC starts new engagements at the top of the
@@ -2688,8 +2689,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (up.error) { toast("Upload failed", up.error.message); return null; }
     return up.data.path;
   }
-  function complianceDocUrl(path: string, downloadName?: string) {
-    return supabase.storage.from("compliance-docs").getPublicUrl(path, downloadName ? { download: downloadName } : undefined).data.publicUrl;
+  async function openComplianceDoc(path: string, downloadName?: string) {
+    if (!(await openSignedUrl("compliance-docs", path, downloadName))) toast("Couldn't open document", "You may not have access to this file");
   }
   async function markObligationFiled(obligation: string) {
     const { data, error } = await supabase.rpc("mark_obligation_filed", { p_obligation: obligation });
@@ -2805,9 +2806,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     loadFromDb().catch(() => {});   // PERF: refresh in the background — don't block the UI on a full reload
     toast(`Receipt saved for ${ref}`, "Proof of delivery attached to the dispatch");
   }
-  // Public URL for a stored receipt path (bucket is public-read).
-  function receiptUrl(path: string) {
-    return supabase.storage.from("dispatch-receipts").getPublicUrl(path).data.publicUrl;
+  // Open a stored dispatch receipt (private bucket, inventory readers only).
+  async function openDispatchReceipt(path: string) {
+    if (!(await openSignedUrl("dispatch-receipts", path))) toast("Couldn't open receipt", "You may not have access to this file");
   }
 
   /* ---------- staff documents (Phase 2c): private bucket, owner + HR read ---------- */
@@ -2983,7 +2984,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     fieldActivities,
     fieldActivityOpen, openFieldActivity: () => setFieldActivityOpen(true), closeFieldActivity: () => setFieldActivityOpen(false), createFieldActivity,
     addBudgetItem, updateBudgetItem, removeBudgetItem, listProjectMembers, setProjectMemberRole,
-    addProjectDocument, projectDocUrl,
+    addProjectDocument, openProjectDoc,
     hrMe, leaveOpen, leaveEdit,
     openLeave: () => { setLeaveEdit(null); setLeaveOpen(true); },
     openLeaveEdit: (a) => { setLeaveEdit(a); setLeaveOpen(true); },
@@ -2995,7 +2996,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     openPettyEdit: (r) => { setPettyEdit(r); setPettyOpen(true); },
     closePetty: () => { setPettyOpen(false); setPettyEdit(null); },
     submitPettyRequest, updatePettyRequest, deletePettyRequest, decidePettyRequest,
-    attachPettyInvoice, removePettyInvoice, uploadFile, uploadFiles, uploadedFileUrl,
+    attachPettyInvoice, removePettyInvoice, uploadFile, uploadFiles, openUploadedFile,
     claims, perDiemRate: Number(appConfig["per_diem_daily_rate"] ?? 0),
     claimOpen, claimEdit,
     canDecideClaims: (effectivePerms[me?.email ?? ""]?.users ?? 0) >= 3 || (effectivePerms[me?.email ?? ""]?.hr ?? 0) >= 2,
@@ -3034,7 +3035,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     crm,
     engFormOpen, openEngForm: () => setEngFormOpen(true), closeEngForm: () => setEngFormOpen(false), createEngagement,
     engUpdateOpen, openEngUpdate: () => setEngUpdateOpen(true), closeEngUpdate: () => setEngUpdateOpen(false),
-    logEngagementNote, setEngagementPartners, engDocUrl,
+    logEngagementNote, setEngagementPartners, openEngDoc,
     partnerOpen, openPartnerForm: () => setPartnerOpen(true), closePartnerForm: () => setPartnerOpen(false), createPartner,
     oppOpen, openOppForm: () => setOppOpen(true), closeOppForm: () => setOppOpen(false), createOpportunity,
     notifications, markNotificationsSeen,
@@ -3043,10 +3044,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     policyOpen, openPolicyForm: () => setPolicyOpen(true), closePolicyForm: () => setPolicyOpen(false), addPolicy,
     docOpen, openDocForm: () => setDocOpen(true), closeDocForm: () => setDocOpen(false), addCompanyDocument,
     contractOpen, openContractForm: () => setContractOpen(true), closeContractForm: () => setContractOpen(false), addContract,
-    complianceDocUrl,
+    openComplianceDoc,
     inventory, stockModal,
     openStockModal: (m) => setStockModal(m), closeStockModal: () => setStockModal(null),
-    receiveStock, issueStock, transferStock, adjustStock, createDispatch, setDispatchState, attachDispatchReceipt, receiptUrl,
+    receiveStock, issueStock, transferStock, adjustStock, createDispatch, setDispatchState, attachDispatchReceipt, openDispatchReceipt,
     itemModal, openItemModal: (m) => setItemModal(m), closeItemModal: () => setItemModal(null),
     createStockItem, updateStockItem,
     assetOpen, openAssetForm: () => setAssetOpen(true), closeAssetForm: () => setAssetOpen(false),

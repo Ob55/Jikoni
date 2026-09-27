@@ -59,7 +59,7 @@ function StageRibbon({ stages, current }: { stages: string[]; current: string })
 export function EngDrawer() {
   const {
     engId, closeEng, toast, engToProject, xProject, createProjectFromEng, openTask,
-    crm, openEngUpdate, setEngagementPartners, engDocUrl, level,
+    crm, openEngUpdate, setEngagementPartners, openEngDoc, level,
   } = useApp();
   const canEdit = level("crm") >= 2;
   // Engagement comes straight from the live CRM read model (DB) — the header,
@@ -169,8 +169,8 @@ export function EngDrawer() {
                   <div className="recon" style={{ paddingLeft: 0, paddingRight: 0 }} key={i}>
                     <span>{d.name}</span>
                     <span style={{ display: "flex", gap: 6 }}>
-                      <button className="btn" style={{ padding: "4px 10px", fontSize: 11.5 }} onClick={() => window.open(engDocUrl(d.path), "_blank", "noopener")}>Open</button>
-                      <a className="btn" style={{ padding: "4px 10px", fontSize: 11.5 }} href={engDocUrl(d.path, d.name)}>Download</a>
+                      <button className="btn" style={{ padding: "4px 10px", fontSize: 11.5 }} onClick={() => openEngDoc(d.path)}>Open</button>
+                      <button type="button" className="btn" style={{ padding: "4px 10px", fontSize: 11.5 }} onClick={() => openEngDoc(d.path, d.name)}>Download</button>
                     </span>
                   </div>
                 ))}
@@ -329,7 +329,7 @@ export function ProjectDrawer() {
   const {
     projectName, closeProject, toast, projectDetails,
     addMilestone, setMilestoneStatus, logFieldActivity, setProjectState,
-    addProjectDocument, projectDocUrl, level,
+    addProjectDocument, openProjectDoc, level,
   } = useApp();
   const canEdit = level("projects") >= 2;
   const p = projectName ? projectDetails[projectName] : null;
@@ -486,8 +486,8 @@ export function ProjectDrawer() {
                   <span style={{ flex: 1 }}>{label}</span>
                   {file ? (
                     <span style={{ display: "flex", gap: 6 }}>
-                      <a className="btn" style={iconBtn} href={projectDocUrl(file.path)} target="_blank" rel="noreferrer" title="View"><EyeI /> View</a>
-                      <a className="btn" style={iconBtn} href={projectDocUrl(file.path, file.name)} title="Download"><ExportI /> Download</a>
+                      <button type="button" className="btn" style={iconBtn} onClick={() => openProjectDoc(file.path)} title="View"><EyeI /> View</button>
+                      <button type="button" className="btn" style={iconBtn} onClick={() => openProjectDoc(file.path, file.name)} title="Download"><ExportI /> Download</button>
                     </span>
                   ) : (
                     <button className="btn" style={{ padding: "4px 10px", fontSize: 11.5 }} onClick={() => toast(String(d), "Opens the document")}>Open</button>

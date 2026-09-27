@@ -309,7 +309,7 @@ const apPill: Record<string, { cls: string; txt: string }> = {
 
 export default function FinanceView() {
   const { tabs, toast, accounts, journals, apInvoices, approveInvoice, payInvoice, openCaptureInvoice, poRows, markInvoicePaid,
-    pettyRequests, decidePettyRequest, canDecidePetty, attachPettyInvoice, removePettyInvoice, uploadedFileUrl,
+    pettyRequests, decidePettyRequest, canDecidePetty, attachPettyInvoice, removePettyInvoice, openUploadedFile,
     claims, decideClaim, markClaimPaid, canDecideClaims, perDiemRate, setAppConfig,
     advances, decideAdvance, issueAdvance, settleAdvance, canDecideAdvances,
     recurringBills, decideBill, canApproveBills,

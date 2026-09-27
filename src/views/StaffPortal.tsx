@@ -514,7 +514,7 @@ function AdvanceReconcileModal() {
 // The five prompts follow the user's admin-assigned report track; users with no
 // track get the classic free-text form.
 function WeeklyReportModal() {
-  const { reportOpen, reportEdit, closeReport, submitWeeklyReport, uploadFile, uploadedFileUrl, toast, me, myWeek } = useApp();
+  const { reportOpen, reportEdit, closeReport, submitWeeklyReport, uploadFile, openUploadedFile, toast, me, myWeek } = useApp();
   const track = (me?.reportTrack && me.reportTrack in REPORT_TRACKS ? me.reportTrack : null) as ReportTrack | null;
   const questions = track ? REPORT_TRACKS[track].questions : [];
   const [did, setDid] = useState("");
@@ -605,7 +605,7 @@ function WeeklyReportModal() {
             {file ? (
               <span style={{ fontSize: 12.5 }}>{file.name} <a href="#" onClick={(e) => { e.preventDefault(); setFile(null); }} style={{ color: "var(--red)", textDecoration: "none" }}>· remove</a></span>
             ) : existing ? (
-              <span style={{ fontSize: 12.5 }}><a href="#" onClick={(e) => { e.preventDefault(); window.open(uploadedFileUrl(existing), "_blank", "noopener"); }} style={{ color: "var(--flame)", textDecoration: "none" }}>current file</a> <a href="#" onClick={(e) => { e.preventDefault(); setExisting(null); }} style={{ color: "var(--red)", textDecoration: "none" }}>· remove</a></span>
+              <span style={{ fontSize: 12.5 }}><a href="#" onClick={(e) => { e.preventDefault(); openUploadedFile(existing); }} style={{ color: "var(--flame)", textDecoration: "none" }}>current file</a> <a href="#" onClick={(e) => { e.preventDefault(); setExisting(null); }} style={{ color: "var(--red)", textDecoration: "none" }}>· remove</a></span>
             ) : (
               <span className="meta">any file or image</span>
             )}
@@ -624,7 +624,7 @@ function WeeklyReportModal() {
 
 export default function StaffPortalView() {
   const { tabs, goTab, toast, openLeave, openLeaveEdit, deleteLeave, hrMe, addStaffDocument, deleteStaffDocument, staffDocUrl, hrData, meEmail, myWeek, openHrModal, selfAssessKpi, submitSelfAssessment, signMyExitStep, refreshHr,
-    pettyRequests, openPetty, openPettyEdit, deletePettyRequest, attachPettyInvoice, removePettyInvoice, uploadedFileUrl,
+    pettyRequests, openPetty, openPettyEdit, deletePettyRequest, attachPettyInvoice, removePettyInvoice, openUploadedFile,
     claims, openClaim, openClaimEdit, deleteClaim,
     advances, openAdvance, openAdvanceEdit, deleteAdvance, openReconcile,
     weeklyReports, openReport, openReportEdit } = useApp();
@@ -803,7 +803,7 @@ export default function StaffPortalView() {
                     {thisWeekReport.nextWeek && <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--hairline)" }}><div className="meta" style={{ marginBottom: 4 }}>Next week's plan</div><div style={{ fontSize: 13.5, whiteSpace: "pre-wrap" }}>{thisWeekReport.nextWeek}</div></div>}
                   </>
                 )}
-                {thisWeekReport.attachmentPath && <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--hairline)" }}><div className="meta" style={{ marginBottom: 4 }}>Attachment</div><a href="#" onClick={(e) => { e.preventDefault(); window.open(uploadedFileUrl(thisWeekReport.attachmentPath!), "_blank", "noopener"); }} style={{ color: "var(--flame)", textDecoration: "none", fontSize: 13.5 }}>View attached file</a></div>}
+                {thisWeekReport.attachmentPath && <div style={{ padding: "12px 18px", borderBottom: "1px solid var(--hairline)" }}><div className="meta" style={{ marginBottom: 4 }}>Attachment</div><a href="#" onClick={(e) => { e.preventDefault(); openUploadedFile(thisWeekReport.attachmentPath!); }} style={{ color: "var(--flame)", textDecoration: "none", fontSize: 13.5 }}>View attached file</a></div>}
                 <Note>Submitted — thanks. You can <a href="#" onClick={(e) => { e.preventDefault(); openReportEdit(thisWeekReport); }} style={{ color: "var(--flame)", textDecoration: "none" }}>edit it</a> anytime this week; the latest version is what HR sees.</Note>
               </>
             ) : (
@@ -820,7 +820,7 @@ export default function StaffPortalView() {
                     <tr key={r.id}>
                       <td className="mono">{fmtD(r.weekStart)}</td>
                       <td style={{ maxWidth: 380, fontSize: 12.5, color: "var(--ink-soft)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.did}</td>
-                      <td>{r.attachmentPath ? <a href="#" onClick={(e) => { e.preventDefault(); window.open(uploadedFileUrl(r.attachmentPath!), "_blank", "noopener"); }} style={{ color: "var(--flame)", textDecoration: "none", fontSize: 12.5 }}>View</a> : <span style={{ color: "var(--ink-soft)" }}>—</span>}</td>
+                      <td>{r.attachmentPath ? <a href="#" onClick={(e) => { e.preventDefault(); openUploadedFile(r.attachmentPath!); }} style={{ color: "var(--flame)", textDecoration: "none", fontSize: 12.5 }}>View</a> : <span style={{ color: "var(--ink-soft)" }}>—</span>}</td>
                       <td><span className={`pill ${r.state === "acknowledged" ? "done" : "today"}`} style={{ textTransform: "none" }}>{r.state === "acknowledged" ? "Acknowledged" : "Submitted"}</span></td>
                     </tr>
                   ))}
